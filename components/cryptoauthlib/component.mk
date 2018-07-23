@@ -1,0 +1,2 @@
+COMPONENT_ADD_INCLUDEDIRS := lib lib/atcacert lib/basic lib/crypto lib/crypto/hashes lib/host lib/jwt lib/hal
+COMPONENT_SRCDIRS := lib lib/atcacert lib/basic lib/crypto lib/crypto/hashes lib/host lib/jwt lib/hal
