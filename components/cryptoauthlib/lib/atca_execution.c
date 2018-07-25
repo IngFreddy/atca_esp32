@@ -33,6 +33,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 #include "atca_command.h"
 #include "atca_device.h"
 #include "atca_execution.h"

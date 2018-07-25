@@ -10,15 +10,22 @@
 #ifndef PROVISION_H_
 #define PROVISION_H_
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <stddef.h>
+#include <stdbool.h>
+
+#include "cryptoauthlib.h"
+
 /*
  * Write configuration data for ESP32 as generated from CryptoAuthBasic
  */
-extern ATCA_STATUS write_config();
+extern int write_config();
 
 /*
  * Write keys data for ESP32
  */
-extern ATCA_STATUS write_keys();
+extern int write_keys();
 
 
 #define CHECK_STATUS(s)  if(s != ATCA_SUCCESS) { printf("Error: Line %d in %s\r\n", __LINE__, __FILE__); while(1);	}

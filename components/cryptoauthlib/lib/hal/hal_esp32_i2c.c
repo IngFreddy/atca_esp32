@@ -145,11 +145,9 @@ ATCA_STATUS hal_i2c_receive(ATCAIface iface, uint8_t *rxdata, uint16_t *rxlength
 ATCA_STATUS hal_i2c_wake(ATCAIface iface)
 {
 	if(i2c_hal_data->state == 0){
-		ESP_LOGW(LOG_TAG,"WAKEUP");
-
 		i2c_cmd_handle_t cmd = i2c_cmd_link_create();
 		i2c_master_start(cmd);
-		esp_err_t errRc = i2c_master_write_byte(cmd, 0 | I2C_MASTER_WRITE, 0);
+		i2c_master_write_byte(cmd, 0 | I2C_MASTER_WRITE, 0);
 		i2c_master_stop(cmd);
 		i2c_cmd_link_delete(cmd);
 
@@ -157,7 +155,8 @@ ATCA_STATUS hal_i2c_wake(ATCAIface iface)
 		uint16_t dataL = 4;
 
 		for(int i=0; hal_i2c_receive(iface, data, &dataL) != 0 && i<15; i++){
-			vTaskDelay(100 / portTICK_PERIOD_MS);
+			ESP_LOGW(LOG_TAG,"WAKEUP %d", i);
+			vTaskDelay(150 / portTICK_PERIOD_MS);
 		}
 
 		if (memcmp(data, expected, 4) == 0)
@@ -208,14 +207,14 @@ ATCA_STATUS hal_i2c_sleep(ATCAIface iface)
 	i2c_cmd_handle_t cmd = i2c_cmd_link_create();
 	i2c_master_start(cmd);
 
-	esp_err_t errRc = i2c_master_write_byte(cmd, address | I2C_MASTER_WRITE, ACK_CHECK_EN);
-	errRc = i2c_master_write_byte(cmd, data, ACK_CHECK_EN);
+	i2c_master_write_byte(cmd, address | I2C_MASTER_WRITE, ACK_CHECK_EN);
+	esp_err_t errRc = i2c_master_write_byte(cmd, data, ACK_CHECK_EN);
 	i2c_master_stop(cmd);
 
 	errRc = i2c_master_cmd_begin(I2C_NUM_0, cmd, 1500 / portTICK_RATE_MS);
 	i2c_cmd_link_delete(cmd);
 
-	return ATCA_SUCCESS;
+	return errRc;
 }
 
 /** \brief manages reference count on given bus and releases resource if no more refences exist
@@ -228,6 +227,7 @@ ATCA_STATUS hal_i2c_release(void *hal_data)
     ATCAI2CMaster_t *hal = (ATCAI2CMaster_t*)hal_data;
 
     i2c_bus_ref_ct--;  // track total i2c bus interface instances for consistency checking and debugging
+    i2c_hal_data->state = 0;
 
     // if the use count for this bus has gone to 0 references, disable it.  protect against an unbracketed release
     if (hal && --(hal->ref_ct) <= 0 && i2c_hal_data != NULL)

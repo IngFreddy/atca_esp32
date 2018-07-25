@@ -37,7 +37,7 @@
 #include "atca_execution.h"
 #include "host/atca_host.h"
 
-
+#include <stdio.h>
 /**
  * \brief Executes the Write command, which writes either one four byte word or
  *        a 32-byte block to one of the EEPROM zones on the device. Depending
@@ -314,6 +314,7 @@ ATCA_STATUS atcab_write_config_zone(const uint8_t* config_data)
         status = atcab_get_zone_size(ATCA_ZONE_CONFIG, 0, &config_size);
         if (status != ATCA_SUCCESS)
         {
+        	printf("1\n");
             break;
         }
 
@@ -321,6 +322,7 @@ ATCA_STATUS atcab_write_config_zone(const uint8_t* config_data)
         status = atcab_write_bytes_zone(ATCA_ZONE_CONFIG, 0, 16, &config_data[16], config_size - 16);
         if (status != ATCA_SUCCESS)
         {
+        	printf("2\n");
             break;
         }
 
@@ -328,12 +330,14 @@ ATCA_STATUS atcab_write_config_zone(const uint8_t* config_data)
         status = atcab_updateextra(UPDATE_MODE_USER_EXTRA, config_data[84]);
         if (status != ATCA_SUCCESS)
         {
+        	printf("3\n");
             break;
         }
         status = atcab_updateextra(UPDATE_MODE_SELECTOR, config_data[85]);
 
         if (status != ATCA_SUCCESS)
         {
+        	printf("4\n");
             break;
         }
     }
