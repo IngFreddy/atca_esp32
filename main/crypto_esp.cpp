@@ -13,12 +13,7 @@ static const char* LOG_TAG = "Encryption";
  */
 Encryption::Encryption()
 {
-	volatile ATCA_STATUS status;
-	status = atcab_init((ATCAIfaceCfg*)&cfg_ateccx08a_i2c);			//REMOTE
-	CHECK_STATUS(status);
 
-	status = atcab_get_pubkey(ASYMETRIC_KEY_SLOT, my_public_key);	//read public keys
-	CHECK_STATUS(status);
 }
 
 
@@ -27,9 +22,28 @@ Encryption::~Encryption()
 	atcab_release();
 }
 
+int Encryption::init()
+{
+	volatile ATCA_STATUS status;
+	status = atcab_init((ATCAIfaceCfg*)&cfg_ateccx08a_i2c);			//REMOTE
+	CHECK_STATUS(status);
+
+	/*bool isLocked;
+	status = atcab_is_locked(LOCK_ZONE_DATA, &isLocked);
+	printf((isLocked? "locked\n" : "unlocked"));
+	CHECK_STATUS(status);*/
+
+	status = atcab_get_pubkey(ASYMETRIC_KEY_SLOT, my_public_key);	//read public keys
+	CHECK_STATUS(status);
+
+	return status;
+}
 
 int Encryption::setRemote(uint8_t* pubKey)
 {
+/*	atcab_sleep();
+	atcab_wakeup();*/
+
 	memcpy(remote_key, pubKey, 64);
 
 	uint8_t ecdh_value[32];

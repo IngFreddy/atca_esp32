@@ -61,6 +61,8 @@ public:
 	Encryption();
 	~Encryption();
 
+	int init();
+
 	int setRemote(uint8_t* pubKey);
 	int encryptData(uint8_t* input, uint8_t* output, size_t length);
 	int decryptData(uint8_t* input, uint8_t* output, size_t length);

@@ -40,6 +40,7 @@ int app_main(void)
 	uint8_t decrypted[20];
 
 	Encryption *encr = new Encryption();
+	encr->init();
 	encr->setRemote(remote_key);
 	encr->encryptData((uint8_t*)text, encrypted, 12);
 

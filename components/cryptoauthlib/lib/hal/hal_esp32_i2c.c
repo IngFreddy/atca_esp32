@@ -145,10 +145,13 @@ ATCA_STATUS hal_i2c_receive(ATCAIface iface, uint8_t *rxdata, uint16_t *rxlength
 ATCA_STATUS hal_i2c_wake(ATCAIface iface)
 {
 	if(i2c_hal_data->state == 0){
+		ESP_LOGW(LOG_TAG,"WAKEUP");
+
 		i2c_cmd_handle_t cmd = i2c_cmd_link_create();
 		i2c_master_start(cmd);
 		i2c_master_write_byte(cmd, 0 | I2C_MASTER_WRITE, 0);
 		i2c_master_stop(cmd);
+		i2c_master_cmd_begin(I2C_NUM_0, cmd, 1500 / portTICK_RATE_MS);
 		i2c_cmd_link_delete(cmd);
 
 		uint8_t data[4], expected[4] = { 0x04, 0x11, 0x33, 0x43 };
@@ -175,7 +178,7 @@ ATCA_STATUS hal_i2c_wake(ATCAIface iface)
 
 ATCA_STATUS hal_i2c_idle(ATCAIface iface)
 {
-	/*ATCAIfaceCfg *cfg = atgetifacecfg(iface);
+	ATCAIfaceCfg *cfg = atgetifacecfg(iface);
 	uint8_t address = cfg->slave_address;
 
 	ESP_LOGW(LOG_TAG,"IDLE");
@@ -189,8 +192,14 @@ ATCA_STATUS hal_i2c_idle(ATCAIface iface)
 	i2c_master_stop(cmd);
 
 	errRc = i2c_master_cmd_begin(I2C_NUM_0, cmd, 1500 / portTICK_RATE_MS);
-	i2c_cmd_link_delete(cmd);*/
+	i2c_cmd_link_delete(cmd);
 
+	if (errRc != ESP_OK) {
+		ESP_LOGE(LOG_TAG, "i2c_master_6write_byte: rc=%d", errRc);
+		return ATCA_COMM_FAIL;
+	}
+
+	i2c_hal_data->state = 0;
 	return ATCA_SUCCESS;
 }
 
@@ -207,14 +216,20 @@ ATCA_STATUS hal_i2c_sleep(ATCAIface iface)
 	i2c_cmd_handle_t cmd = i2c_cmd_link_create();
 	i2c_master_start(cmd);
 
-	i2c_master_write_byte(cmd, address | I2C_MASTER_WRITE, ACK_CHECK_EN);
-	esp_err_t errRc = i2c_master_write_byte(cmd, data, ACK_CHECK_EN);
+	esp_err_t errRc = i2c_master_write_byte(cmd, address | I2C_MASTER_WRITE, ACK_CHECK_EN);
+	errRc = i2c_master_write_byte(cmd, data, ACK_CHECK_EN);
 	i2c_master_stop(cmd);
 
 	errRc = i2c_master_cmd_begin(I2C_NUM_0, cmd, 1500 / portTICK_RATE_MS);
 	i2c_cmd_link_delete(cmd);
 
-	return errRc;
+	if (errRc != ESP_OK) {
+		ESP_LOGE(LOG_TAG, "i2c_master_6write_byte: rc=%d", errRc);
+		return ATCA_COMM_FAIL;
+	}
+
+	i2c_hal_data->state = 0;
+	return ATCA_SUCCESS;
 }
 
 /** \brief manages reference count on given bus and releases resource if no more refences exist
@@ -234,7 +249,7 @@ ATCA_STATUS hal_i2c_release(void *hal_data)
     {
         free(i2c_hal_data);
         i2c_hal_data = NULL;
-    }
+    };
 
     return ATCA_SUCCESS;
 }
