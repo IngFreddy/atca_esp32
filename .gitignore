@@ -1,4 +1,6 @@
 build/
 sdkconfig
 sdkconfig.old
-.vscode
+.settings/
+.vscode/
+Makefile

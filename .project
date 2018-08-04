@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>ATCA_ESP</name>
+	<name>demoCrypto</name>
 	<comment></comment>
 	<projects>
 	</projects>
@@ -24,10 +24,4 @@
 		<nature>org.eclipse.cdt.managedbuilder.core.managedBuildNature</nature>
 		<nature>org.eclipse.cdt.managedbuilder.core.ScannerConfigNature</nature>
 	</natures>
-	<variableList>
-		<variable>
-			<name>IDF_PATH</name>
-			<value>file:/C:/Users/Intrak/Documents/ESP32/esp-idf</value>
-		</variable>
-	</variableList>
 </projectDescription>
