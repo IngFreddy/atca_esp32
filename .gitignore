@@ -3,4 +3,3 @@ sdkconfig
 sdkconfig.old
 .settings/
 .vscode/
-Makefile

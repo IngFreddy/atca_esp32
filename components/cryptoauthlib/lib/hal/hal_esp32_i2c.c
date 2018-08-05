@@ -1,3 +1,12 @@
+/*
+ * HAL I2C Interface for chip Cryptography chip ATECC508A
+ * ESP32 framework ESP-IDF
+ * 
+ * 
+ * Created: 3. 7. 2018 13:46:20
+ *  Author: Milan Mucka
+ */
+
 
 #include <string.h>
 #include <stdio.h>
