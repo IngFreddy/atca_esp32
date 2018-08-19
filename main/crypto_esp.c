@@ -12,6 +12,7 @@
 #include "crypto_esp.h"
 
 uint8_t* my_public_key = NULL;
+esp_aes_context aes_key;
 
 static const char* LOG_TAG = "Encryption";
 
@@ -35,6 +36,9 @@ int init_atca_device()
 	return status;
 }
 
+/*
+ * get ECDH Secret key from chip
+ */
 int asymmetric_ecdh_comm(uint8_t *remote_key, uint8_t *ecdh_value)
 {
 	volatile ATCA_STATUS status;
@@ -60,6 +64,14 @@ int setRemote(uint8_t* pubKey)
 	esp_aes_setkey(&aes_key, ecdh_value, 256);
 
 	return status;
+}
+
+
+/*
+ * Return Public key of initalized chip
+ */
+uint8_t* getPublicKey(){
+	return my_public_key;
 }
 
 /*
@@ -114,64 +126,79 @@ int decryptData( uint8_t* input, uint8_t* output, size_t length)
 	return ret;
 }
 
+/*
+ * Generate random for nonce from device ATCA
+ * Need nonce[32] allocated
+ * 
+ * return state
+ */
+int generate_random(uint8_t* nonce)
+{
+	return atcab_random(nonce);
+}
 
+/*
+ * Verification of signature
+ * 
+ * nonce[32]
+ * sugnature[64]
+ * remoteKey[64]
+ * 
+ * return 0 on success
+*/
+int signature_verify(uint8_t* nonce, uint8_t* signature, uint8_t* remoteKey)
+{
+	volatile ATCA_STATUS status;
+
+	bool verify = false;
+
+	status = atcab_verify_extern((const uint8_t*)nonce, signature, remoteKey, &verify);		//VERIFY SIGNATURE
+
+	if(verify && status == ATCA_SUCCESS) {
+		return 0;
+	} else {
+		return(-1);
+	}
+}
+
+/*
+ * Sign NONCE from host for verification
+ * 
+ * nonce[32]
+ * signature[64]
+ * 
+ * return state
+*/
+int signature_generate(uint8_t* nonce, uint8_t* signature)
+{
+	volatile ATCA_STATUS status;
+
+	status = atcab_sign(ASYMETRIC_KEY_SLOT, nonce, signature);
+
+	return status;
+}
+
+/*
+ * SHA-256 checksum of data
+ * 
+ * input data[length]
+ * output [32]	--checksum of data
+ * 
+ * return status
+ *
+ */
+int checksum_data(uint8_t *data, size_t length, uint8_t *output)
+{
+	void esp_sha(SHA2_256, data, length, output);
+	
+	return 0;
+}
+
+/* 
+ * Release device on the end
+*/
 void release_atca_device()
 {
 	atcab_release();
 	free(my_public_key);
 }
-
-
-/* AUTHENTIFICATION
-//CryptoAuthLib Basics Disposable Asymmetric Auth
-void asymmetric_auth(void) {
-	volatile ATCA_STATUS status;
-
-	status = atcab_init( &cfg_ateccx08a_i2c_host );			//HOST
-	CHECK_STATUS(status);
-	printf("Device init complete\n\r");
-
-	uint8_t nonce[32];
-	uint8_t signature[64];
-
-	status = atcab_random((uint8_t*)&nonce);
-	CHECK_STATUS(status);
-	printf("Random from host\r\n");
-	PRINT_BYTES(nonce, 32);
-
-	status = atcab_init( &cfg_ateccx08a_i2c_remote );		//REMOTE
-	uint8_t slot = 4;
-
-	status = atcab_sign(slot, (const uint8_t*)&nonce, (uint8_t*)&signature);
-	CHECK_STATUS(status);
-	printf("Signature from remote\r\n");
-	PRINT_BYTES(signature, 64);
-
-	uint8_t remote_pubk[64];
-	status = atcab_get_pubkey(slot, remote_pubk);
-	CHECK_STATUS(status);
-	printf("Remote disposable public key\r\n");
-	PRINT_BYTES(remote_pubk, 64);
-
-	status = atcab_init( &cfg_ateccx08a_i2c_host );			//HOST
-	CHECK_STATUS(status);
-
-	bool verify = false;
-	bool key_found = false;
-
-	uint8_t i = 0;
-	for(;i < sizeof(key_store)/sizeof(asymm_public_key_t); i++) {	//FIND PUBLIC KEY
-		if(memcmp(&key_store[i], &remote_pubk, 64) == 0) {
-			key_found = true;
-			break;
-		}
-	}
-	if(key_found) {
-		status = atcab_verify_extern((const uint8_t*)&nonce,(const uint8_t*)&signature,(const uint8_t*)&remote_pubk, &verify);		//VERIFY SIGNATURE
-	}
-	if(verify) {
-		printf("Authenticated by host\r\n");
-	} else {
-		printf("Failed to authenticate\r\n");
-	}
-}*/

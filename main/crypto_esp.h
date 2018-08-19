@@ -19,6 +19,7 @@
 #include <esp_log.h>
 
 #include <hwcrypto/aes.h>
+#include <hwcrypto/sha.h>
 
 #include "cryptoauthlib.h"
 #include "atca_host.h"
@@ -70,17 +71,28 @@ static const uint8_t transport_key[] = {
 
 //initialize
 int init_atca_device();
+
 //set remote public key for ECDH
 int setRemote(uint8_t* pubKey);
+uint8_t* getPublicKey();	//pointer for own public key
+int generate_random(uint8_t* nonce);	//new random number
+
+//Asymmetric Authentification using ATCA chip
+int signature_verify(uint8_t* nonce, uint8_t* signature, uint8_t* remoteKey);
+int signature_generate(uint8_t* nonce, uint8_t* signature);
+
 //encrypt data using AES symetric cypher
 int encryptData(uint8_t* input, uint8_t* output, size_t length);
 int decryptData(uint8_t* input, uint8_t* output, size_t length);
-//release device on the end
+
+//generate checksum for data
+int checksum_data(uint8_t *data, size_t length, uint8_t *output);
+
+//release device at the end
 void release_atca_device();
 
 
 extern uint8_t* my_public_key;
-esp_aes_context aes_key;
 
 
 #endif
