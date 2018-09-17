@@ -11,26 +11,30 @@
 
 #include "crypto_esp.h"
 
-uint8_t* my_public_key = NULL;
 esp_aes_context aes_key;
 
 static const char* LOG_TAG = "Encryption";
 
+
+Cryptography::Cryptography()
+{
+	init_atca_device();
+}
+
+Cryptography::~Cryptography()
+{
+	this->release_atca_device();
+}
+
 /*
  * Initialize CryptoAuthLib Basics Disposable Asymmetric ECDH
  */
-int init_atca_device()
+int Cryptography::init_atca_device()
 {
 	volatile ATCA_STATUS status;
 	status = atcab_init((ATCAIfaceCfg*)&cfg_ateccx08a_i2c);			//REMOTE
 	CHECK_STATUS(status);
 	
-	my_public_key = (uint8_t*)malloc(64);
-	if(my_public_key == NULL){
-		printf("error Malloc init public key\n");
-		return -5;
-	}
-
 	status = atcab_get_pubkey(ASYMETRIC_KEY_SLOT, my_public_key);	//read public keys
 
 	return status;
@@ -39,7 +43,7 @@ int init_atca_device()
 /*
  * get ECDH Secret key from chip
  */
-int asymmetric_ecdh_comm(uint8_t *remote_key, uint8_t *ecdh_value)
+ATCA_STATUS asymmetric_ecdh_comm(uint8_t *remote_key, uint8_t *ecdh_value)
 {
 	volatile ATCA_STATUS status;
 
@@ -51,7 +55,7 @@ int asymmetric_ecdh_comm(uint8_t *remote_key, uint8_t *ecdh_value)
 /*
  *	Set remote public key for encryption
 */
-int setRemote(uint8_t* pubKey)
+int Cryptography::set_remote(uint8_t* pubKey)
 {
 	uint8_t ecdh_value[32];
 	ATCA_STATUS status = asymmetric_ecdh_comm(pubKey, ecdh_value); //ECDH secret key
@@ -70,8 +74,9 @@ int setRemote(uint8_t* pubKey)
 /*
  * Return Public key of initalized chip
  */
-uint8_t* getPublicKey(){
-	return my_public_key;
+uint8_t* Cryptography::public_key()
+{
+	return this->my_public_key;
 }
 
 /*
@@ -83,7 +88,7 @@ uint8_t* getPublicKey(){
  *
  *	return success/fail
  */
-int encryptData(uint8_t* input, uint8_t* output, size_t length)
+int Cryptography::encryptData(uint8_t* input, uint8_t* output, size_t length)
 {
 	uint8_t nonce[16];
 	uint8_t stream[16];
@@ -109,7 +114,7 @@ int encryptData(uint8_t* input, uint8_t* output, size_t length)
  *
  *	return success/fail
  */
-int decryptData( uint8_t* input, uint8_t* output, size_t length)
+int Cryptography::decryptData( uint8_t* input, uint8_t* output, size_t length)
 {
 	uint8_t nonce[16];
 	uint8_t stream[16];
@@ -132,7 +137,7 @@ int decryptData( uint8_t* input, uint8_t* output, size_t length)
  * 
  * return state
  */
-int generate_random(uint8_t* nonce)
+int Cryptography::generate_random(uint8_t* nonce)
 {
 	return atcab_random(nonce);
 }
@@ -146,7 +151,7 @@ int generate_random(uint8_t* nonce)
  * 
  * return 0 on success
 */
-int signature_verify(uint8_t* nonce, uint8_t* signature, uint8_t* remoteKey)
+int Cryptography::signature_verify(uint8_t* nonce, uint8_t* signature, uint8_t* remoteKey)
 {
 	volatile ATCA_STATUS status;
 
@@ -169,7 +174,7 @@ int signature_verify(uint8_t* nonce, uint8_t* signature, uint8_t* remoteKey)
  * 
  * return state
 */
-int signature_generate(uint8_t* nonce, uint8_t* signature)
+int Cryptography::signature_generate(uint8_t* nonce, uint8_t* signature)
 {
 	volatile ATCA_STATUS status;
 
@@ -187,18 +192,17 @@ int signature_generate(uint8_t* nonce, uint8_t* signature)
  * return status
  *
  */
-int checksum_data(uint8_t *data, size_t length, uint8_t *output)
+int Cryptography::checksum_data(uint8_t *data, size_t length, uint8_t *output)
 {
-	void esp_sha(SHA2_256, data, length, output);
+	esp_sha(SHA2_256, data, length, output);
 	
-	return 0;
+	return length;
 }
 
 /* 
  * Release device on the end
 */
-void release_atca_device()
+void Cryptography::release_atca_device()
 {
 	atcab_release();
-	free(my_public_key);
 }

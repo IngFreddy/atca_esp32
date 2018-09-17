@@ -1,5 +1,7 @@
 build/
 sdkconfig
 sdkconfig.old
+.vscode
 .settings/
-.vscode/
+.cproject
+.project

@@ -3,3 +3,5 @@
 - Ported ATCA library from Microchip Atmel SMD21 to ESP32 HAL
 - Added Symetric Cryptography AES-CTR from esp-idf core framework with HW accelerator
 - Created example for encryption and decryption
+
+You can find pureC implementation in branche pureC
