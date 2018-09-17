@@ -38,13 +38,14 @@
 
 /** \brief default configuration for an ECCx08A device */
 ATCAIfaceCfg cfg_ateccx08a_i2c_default = {
-    .iface_type         = ATCA_I2C_IFACE,
-    .devtype            = ATECC508A,
-    .slave_address  	= 0xC0,
-    .baud           	= 100000,
-    //.baud = 100000,
-    .wake_delay         = 1500,
-    .rx_retries         = 20
+    .iface_type             = ATCA_I2C_IFACE,
+    .devtype                = ATECC508A,
+    .slave_address          = 0xC0,
+    .bus                    = 2,
+    .baud                   = 400000,
+    //.atcai2c.baud = 100000,
+    .wake_delay             = 1500,
+    .rx_retries             = 20
 };
 
 

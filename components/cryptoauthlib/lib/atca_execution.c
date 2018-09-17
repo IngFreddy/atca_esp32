@@ -33,7 +33,6 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
 #include "atca_command.h"
 #include "atca_device.h"
 #include "atca_execution.h"
@@ -41,11 +40,11 @@
 #include "hal/atca_hal.h"
 
 #ifndef ATCA_POLLING_INIT_TIME_MSEC
-#define ATCA_POLLING_INIT_TIME_MSEC       100
+#define ATCA_POLLING_INIT_TIME_MSEC       1
 #endif
 
 #ifndef ATCA_POLLING_FREQUENCY_TIME_MSEC
-#define ATCA_POLLING_FREQUENCY_TIME_MSEC  100
+#define ATCA_POLLING_FREQUENCY_TIME_MSEC  2
 #endif
 
 #ifndef ATCA_POLLING_MAX_TIME_MSEC

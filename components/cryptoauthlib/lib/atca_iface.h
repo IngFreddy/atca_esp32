@@ -65,16 +65,11 @@ typedef enum
 
 typedef struct
 {
-
-} ATCAI2C;
-
-typedef struct
-{
-
     ATCAIfaceType  iface_type;      // active iface - how to interpret the union below
     ATCADeviceType devtype;         // explicit device type
-	uint8_t  slave_address; // 8-bit slave address
-	uint32_t baud;          // typically 400000
+    uint8_t  slave_address; // 8-bit slave address
+    uint8_t  bus;           // logical i2c bus number, 0-based - HAL will map this to a pin pair for SDA SCL
+    uint32_t baud;          // typically 400000
     uint16_t wake_delay;    // microseconds of tWHI + tWLO which varies based on chip type
     int      rx_retries;    // the number of retries to attempt for receiving bytes
     void *   cfg_data;      // opaque data used by HAL in device discovery

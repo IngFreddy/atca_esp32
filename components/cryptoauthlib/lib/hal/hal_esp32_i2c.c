@@ -91,13 +91,13 @@ ATCA_STATUS hal_i2c_send(ATCAIface iface, uint8_t *txdata, int txlength)
 
 	esp_err_t errRc = i2c_master_write_byte(cmd, address | I2C_MASTER_WRITE, ACK_CHECK_EN);
 	if (errRc != ESP_OK) {
-		ESP_LOGE(LOG_TAG, "i2c_master_1write_byte: rc=%d", errRc);
+		ESP_LOGW(LOG_TAG, "i2c_master_1write_byte: rc=%d", errRc);
 		return ATCA_COMM_FAIL;
 	}
 	if(txlength > 0){
 		errRc = i2c_master_write(cmd, txdata, txlength, ACK_CHECK_EN);
 		if (errRc != ESP_OK) {
-			ESP_LOGE(LOG_TAG, "i2c_master_2write_byte: rc=%d", errRc);
+			ESP_LOGW(LOG_TAG, "i2c_master_2write_byte: rc=%d", errRc);
 			return ATCA_COMM_FAIL;
 		}
 	}
@@ -108,7 +108,7 @@ ATCA_STATUS hal_i2c_send(ATCAIface iface, uint8_t *txdata, int txlength)
 	errRc = i2c_master_cmd_begin(I2C_NUM_0, cmd, 1500 / portTICK_RATE_MS);
 	i2c_cmd_link_delete(cmd);
 	if (errRc != ESP_OK) {
-		ESP_LOGE(LOG_TAG, "i2c_master_3write_byte: rc=%d", errRc);
+		ESP_LOGW(LOG_TAG, "i2c_master_3write_byte: rc=%d", errRc);
 		return ATCA_COMM_FAIL;
 	}
 
@@ -126,7 +126,7 @@ ATCA_STATUS hal_i2c_receive(ATCAIface iface, uint8_t *rxdata, uint16_t *rxlength
     i2c_master_start(cmd);
 	esp_err_t errRc = i2c_master_write_byte(cmd, address | I2C_MASTER_READ, ACK_CHECK_EN);
 	if (errRc != ESP_OK) {
-		ESP_LOGE(LOG_TAG, "i2c_master_4write_byte: rc=%d", errRc);
+		ESP_LOGW(LOG_TAG, "i2c_master_4write_byte: rc=%d", errRc);
 		return ATCA_COMM_FAIL;
 	}
     if (*rxlength > 1) {
@@ -135,16 +135,16 @@ ATCA_STATUS hal_i2c_receive(ATCAIface iface, uint8_t *rxdata, uint16_t *rxlength
     errRc = i2c_master_read_byte(cmd, rxdata + *rxlength - 1, (i2c_ack_type_t)ACK_VAL);
     i2c_master_stop(cmd);
 	if (errRc != ESP_OK) {
-		ESP_LOGE(LOG_TAG, "i2c_master_5write_byte: rc=%d", errRc);
+		ESP_LOGW(LOG_TAG, "i2c_master_5write_byte: rc=%d", errRc);
 		return ATCA_COMM_FAIL;
 	}
 
-	vTaskDelay(10 / portTICK_PERIOD_MS);
+	vTaskDelay(100 / portTICK_PERIOD_MS);
 
     errRc = i2c_master_cmd_begin(I2C_NUM_0, cmd, 1500 / portTICK_RATE_MS);
     i2c_cmd_link_delete(cmd);
 	if (errRc != ESP_OK) {
-		ESP_LOGE(LOG_TAG, "i2c_master_6write_byte: rc=%d", errRc);
+		ESP_LOGW(LOG_TAG, "i2c_master_6write_byte: rc=%d", errRc);
 		return ATCA_COMM_FAIL;
 	}
 
@@ -154,7 +154,7 @@ ATCA_STATUS hal_i2c_receive(ATCAIface iface, uint8_t *rxdata, uint16_t *rxlength
 ATCA_STATUS hal_i2c_wake(ATCAIface iface)
 {
 	if(i2c_hal_data->state == 0){
-		ESP_LOGW(LOG_TAG,"WAKEUP");
+		//ESP_LOGW(LOG_TAG,"WAKEUP");
 
 		i2c_cmd_handle_t cmd = i2c_cmd_link_create();
 		i2c_master_start(cmd);
@@ -167,7 +167,7 @@ ATCA_STATUS hal_i2c_wake(ATCAIface iface)
 		uint16_t dataL = 4;
 
 		for(int i=0; hal_i2c_receive(iface, data, &dataL) != 0 && i<15; i++){
-			ESP_LOGW(LOG_TAG,"WAKEUP %d", i);
+			ESP_LOGW(LOG_TAG,"WAKEUP error %d", i);
 			vTaskDelay(150 / portTICK_PERIOD_MS);
 		}
 
@@ -190,7 +190,7 @@ ATCA_STATUS hal_i2c_idle(ATCAIface iface)
 	ATCAIfaceCfg *cfg = atgetifacecfg(iface);
 	uint8_t address = cfg->slave_address;
 
-	ESP_LOGW(LOG_TAG,"IDLE");
+	//ESP_LOGW(LOG_TAG,"IDLE");
 	uint8_t data = 0x02;	// idle word address value
 
 	i2c_cmd_handle_t cmd = i2c_cmd_link_create();
@@ -219,7 +219,7 @@ ATCA_STATUS hal_i2c_sleep(ATCAIface iface)
 
 	i2c_hal_data->state = 0;
 
-	ESP_LOGW(LOG_TAG,"SLEEP");
+	//ESP_LOGW(LOG_TAG,"SLEEP");
 	uint8_t data = 0x01;	// idle word address value
 
 	i2c_cmd_handle_t cmd = i2c_cmd_link_create();

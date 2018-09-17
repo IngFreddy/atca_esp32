@@ -155,7 +155,7 @@ ATCA_STATUS atreceive(ATCAIface ca_iface, uint8_t *rxdata, uint16_t *rxlength)
  */
 ATCA_STATUS atwake(ATCAIface ca_iface)
 {
-    ATCA_STATUS status = ca_iface->atwake(ca_iface);
+    ATCA_STATUS status = hal_i2c_wake(ca_iface);
 
     if (status == ATCA_WAKE_FAILED)
     {
@@ -163,7 +163,7 @@ ATCA_STATUS atwake(ATCAIface ca_iface)
         // and try again.
         atca_delay_ms(ATCA_POST_DELAY_MSEC);
 
-        status = ca_iface->atwake(ca_iface);
+        status = hal_i2c_wake(ca_iface);
     }
 
     return status;
